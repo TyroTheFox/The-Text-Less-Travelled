@@ -6,7 +6,7 @@ import javax.xml.transform.Templates;
 
 public class Combat {
 
-	private Parser parser;
+	private Parser combatParser;
 	private Player player;
 	private ArrayList<PlayerCharacter> playerParty;
 	private ArrayList<Enemy> enemyParty;
@@ -26,7 +26,18 @@ public class Combat {
 	
 	int currentTurn = 0;
 	
+    // a constant array that holds all valid command words
+    private static String[] combatCommands = {"attack", "cast", "shoot", "defend"};
+	
 	public Combat(){
+		
+		ArrayList<String> temp = new ArrayList<String>();
+		for(int i = 0; i < combatCommands.length; i++){
+			temp.add(combatCommands[i]);
+		}
+		
+		combatParser = new Parser(temp);
+		
 		player = Logic.playerOne;
 		playerParty = player.party;
 		enemyParty = Logic.currentEnemyTeam;
@@ -45,6 +56,7 @@ public class Combat {
 		for(BattleCharacter b : turnOrder) {
 			temp = b;
 			if(b.type == 2){
+				b.enemy.defending = false;
 				if(!b.enemy.frontRow){
 					display.println();
 					display.print("/" + b.targetting + "//// " + b.enemy.name + " // ");
@@ -71,14 +83,17 @@ public class Combat {
 				}
 	        }
 		}
+	    
 		display.println("||||||||||| Enemy Party");
 		display.println("-----------------------");
 		display.println();
 		display.println("-----------------------");
 		display.println("||||||||||| Player Party");
+		
 		for(BattleCharacter b : turnOrder) {
 			temp = b;
 			if(b.type == 1){
+				b.player.defending = false;
 				if(b.player.frontRow){
 					display.print("///// " + b.player.name + " // ");
 					display.print("Lvl: " + b.player.level + " // ");
@@ -101,6 +116,7 @@ public class Combat {
 					display.print("Lvl: " + b.player.level + " // ");
 					display.print("HP: " + b.player.HP + " // ");
 					display.println();
+					combatParser.showCommands();
 					getCommand(b);
 				}
 	        }
@@ -125,6 +141,10 @@ public class Combat {
 		          if (commandWord.equals("shoot")){
 					  gunAttack(b.returnCommand());
 				  }
+		          if (commandWord.equals("defend")){
+		        	  display.println();
+					  display.println(b.player.name + " defends.");
+				  }
 			  }
 			  if(b.type == 2){
 		            BattleCharacter[] list = new BattleCharacter[10];
@@ -144,13 +164,19 @@ public class Combat {
 		    		
 		    		tempP = list[rand].player;
 				  
-		    		float damage = temp.enemy.attackCalc(tempP.fortitude, 50);
-				  	display.println();
-				  	display.println(temp.name + " attacked " + tempP.name + " for " + damage);
-				  	tempP.reduceHP(damage);
-				  	if(b.enemy.critFlag){
-				  		display.println("-!CRITICAL HIT!-");
-				  	}
+		    		if(!tempP.defending){
+			    		float damage = temp.enemy.attackCalc(tempP.fortitude, 50);
+					  	display.println();
+					  	display.println(temp.name + " attacked " + tempP.name + " for " + damage);
+					  	tempP.reduceHP(damage);
+					  	if(b.enemy.critFlag){
+					  		display.println("-!CRITICAL HIT!-");
+					  	}
+		    		}
+		    		else{
+		    			display.println();
+		    			display.println(tempP.name + " is defending and so, takes no damage.");
+		    		}
 			  }
 		  }
 		  
@@ -249,7 +275,7 @@ public class Combat {
 	public void getCommand(BattleCharacter b){
         boolean finished = false;
         while (! finished) {        	
-            Command command = Logic.parser.getCommand();
+            Command command = combatParser.getCommand();
             finished = processCommand(command, b);
         }
 	}
@@ -259,7 +285,7 @@ public class Combat {
 		display.println();
 		display.println("Push Enter to Continue");
         while (! finished) {        	
-            Command command = Logic.parser.getCommand();
+            Command command = combatParser.getCommand();
             finished = true;
         }
 	}
@@ -308,6 +334,11 @@ public class Combat {
         		b.storeCommand(command);
 	            return true;
         	}
+        }
+        else if(commandWord.equals("defend")){
+        	b.player.defending = true;
+        	b.storeCommand(command);
+        	return true;
         }
         else{
         	Logic.display.println("I don't know what you mean...");
@@ -363,17 +394,24 @@ public class Combat {
 		float range = Math.abs(max - min);     
 		rand = (float) ((Math.random() * range) + (min <= max ? min : max));
 		
-		if(rand <= hitChance){        
-	    	float damage = temp.player.attackCalc(tempE.fortitude, 50);
-			display.println();
-	    	display.println(temp.player.name + " attacked " + tempE.name + " for " + damage);
-	    	tempE.reduceHP(damage);
-		  	if(temp.player.critFlag){
-		  		display.println("-!CRITICAL HIT!-");
-		  	}
+		if(!tempE.defending){
+			if(rand <= hitChance){        
+		    	float damage = temp.player.attackCalc(tempE.fortitude, 50);
+				display.println();
+		    	display.println(temp.player.name + " attacked " + tempE.name + " for " + damage);
+		    	tempE.reduceHP(damage);
+			  	if(temp.player.critFlag){
+			  		display.println("-!CRITICAL HIT!-");
+			  	}
+			}
+			else{
+				display.println();
+				display.println(temp.player.name + " missed.");
+			}
 		}
 		else{
-			display.println(temp.player.name + " missed.");
+			display.println();
+			display.println(tempE.name + " is defending and so, takes no damage.");
 		}
     }
     
@@ -425,17 +463,24 @@ public class Combat {
 		float range = Math.abs(max - min);     
 		rand = (float) ((Math.random() * range) + (min <= max ? min : max));
 		
-		if(rand <= hitChance){ 
-	    	float damage = temp.player.mAttackCalc(tempE.fortitude, 50);
-			display.println();
-	    	display.println(temp.player.name + " attacked " + tempE.name + " for " + damage);
-	    	tempE.reduceHP(damage);
-		  	if(temp.player.critFlag){
-		  		display.println("-!CRITICAL HIT!-");
-		  	}
+		if(!tempE.defending){
+			if(rand <= hitChance){ 
+		    	float damage = temp.player.mAttackCalc(tempE.fortitude, 50);
+				display.println();
+		    	display.println(temp.player.name + " attacked " + tempE.name + " for " + damage);
+		    	tempE.reduceHP(damage);
+			  	if(temp.player.critFlag){
+			  		display.println("-!CRITICAL HIT!-");
+			  	}
+			}
+			else{
+				display.println();
+				display.println(temp.player.name + " missed.");
+			}
 		}
 		else{
-			display.println(temp.player.name + " missed.");
+			display.println();
+			display.println(tempE.name + " is defending and so, takes no damage.");
 		}
     }
     
@@ -487,17 +532,24 @@ public class Combat {
 		float range = Math.abs(max - min);     
 		rand = (float) ((Math.random() * range) + (min <= max ? min : max));
 		
-		if(rand <= hitChance){  
-	    	float damage = temp.player.gAttackCalc(tempE.fortitude, 50);
-			display.println();
-	    	display.println(temp.player.name + " attacked " + tempE.name + " for " + damage);
-	    	tempE.reduceHP(damage);
-		  	if(temp.player.critFlag){
-		  		display.println("-!CRITICAL HIT!-");
-		  	}
+		if(!tempE.defending){
+			if(rand <= hitChance){  
+		    	float damage = temp.player.gAttackCalc(tempE.fortitude, 50);
+				display.println();
+		    	display.println(temp.player.name + " attacked " + tempE.name + " for " + damage);
+		    	tempE.reduceHP(damage);
+			  	if(temp.player.critFlag){
+			  		display.println("-!CRITICAL HIT!-");
+			  	}
+			}
+			else{
+				display.println();
+				display.println(temp.player.name + " missed.");
+			}
 		}
 		else{
-			display.println(temp.player.name + " missed.");
+			display.println();
+			display.println(tempE.name + " is defending and so, takes no damage.");
 		}
     }
 	

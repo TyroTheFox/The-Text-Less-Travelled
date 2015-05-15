@@ -93,6 +93,7 @@ public class PlayerCharacter {
 			Boolean frontRow = false;	
 			
 			float accuracy = 1;
+			boolean defending = false;
 			
 	public PlayerCharacter(String name, float startingLevel, CharacterClass cClass, 
 			float str, float dex, float con, float inte, float wis, float cha){
@@ -148,7 +149,7 @@ public class PlayerCharacter {
 		magicalSkill = (((INT + WIS) * 10 + magMod) * level / 50 + 5);
 		magicalFortitude = (((INT + CON) * 10 + magFortMod) * level / 50 + 5);
 		
-		critRatio = dexterity/7.5f + 5;
+		critRatio = dexterity/15 + 5;
 	}
 	
     public int compareDexTo(PlayerCharacter p)

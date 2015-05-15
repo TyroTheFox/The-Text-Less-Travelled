@@ -1,5 +1,6 @@
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.StringTokenizer;
 
 /**
@@ -21,9 +22,9 @@ class Parser
 
     private CommandWords commands;  // holds all valid command words
 
-    public Parser() 
+    public Parser(ArrayList<String> commandList) 
     {
-        commands = new CommandWords();
+        commands = new CommandWords(commandList);
     }
 
     public Command getCommand() 

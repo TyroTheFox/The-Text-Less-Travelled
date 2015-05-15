@@ -47,7 +47,7 @@ class Game
                 
         boolean finished = false;
         while (! finished) {
-            Command command = Logic.parser.getCommand();
+            Command command = Logic.navParser.getCommand();
             finished = Logic.processCommand(command);
         }
         Logic.display.println("Thank you for playing.  Good bye.");

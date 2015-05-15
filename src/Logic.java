@@ -1,5 +1,6 @@
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Stack;
 import java.util.Set;
 import java.util.HashMap;
@@ -9,7 +10,7 @@ import java.util.Iterator;
 public class Logic {
 	// Initialises instances of all the classes that are necessary for functions.
 		// Creates an instance of the Parser class in order to make commands to the game.
-	    public static Parser parser;
+	    public static Parser navParser;
 	    
 	    // Creates instances of each playable character.
 	    static Player playerOne;
@@ -48,10 +49,21 @@ public class Logic {
         // Rooms
     	// Each room is declared as a member of the Room Class.
         Room outside, hallway, office, safe, magic, basement, sweet, pizza, attic;
+        
+      // a constant array that holds all valid command words
+      private static String[] navCommands = {
+          "go", "quit", "help", "look", "examine", "back", "systemtest", "inventory", "drop", "take", "zuul", "describe", "talk", "approach", "stop", "battle"
+      };
       
 	    
 	public Logic(){
-        parser = new Parser();
+		
+		ArrayList<String> temp = new ArrayList<String>();
+		for(int i = 0; i < navCommands.length; i++){
+			temp.add(navCommands[i]);
+		}
+		
+        navParser = new Parser(temp);
         debug_mode = false;
         playerList = new HashMap<String, Player>();
 		// By default, use standard output
@@ -400,7 +412,7 @@ public class Logic {
         display.println("You are lost. You are alone. You wander");
         display.println(" ");
         display.println("Your command words are:");
-        parser.showCommands();
+        navParser.showCommands();
     }
 
     /** 
@@ -432,7 +444,7 @@ public class Logic {
             // Prints the new locations description.
             display.println(currentRoom.getLongDescription());
             display.println(currentRoom.getItemList());
-            stopTalkingToCharacter();
+            cancelTalkingToCharacter();
         }
     }
     
@@ -452,18 +464,12 @@ public class Logic {
         else{
             Room nextRoom = null;
             nextRoom = lastRoom;
-
-            if (nextRoom == null) {
-                display.println("There is no door!");
-            }
-            else {
-            		// Changes the current room to the room the player moves into.
-                    currentRoom = nextRoom;
-                    // Then displays that rooms description.
-                    display.println(currentRoom.getLongDescription());
-                    display.println(currentRoom.getItemList());
-                    stopTalkingToCharacter();
-            }
+    		// Changes the current room to the room the player moves into.
+            currentRoom = nextRoom;
+            // Then displays that rooms description.
+            display.println(currentRoom.getLongDescription());
+            display.println(currentRoom.getItemList());
+            cancelTalkingToCharacter();
         }
     }     
     
@@ -572,6 +578,10 @@ public class Logic {
     	characterBeingTalkedTo = null;
     	display.println("You'll talk to them later.");
     	lookRoom();
+    }
+    
+    private static void cancelTalkingToCharacter(){
+    	characterBeingTalkedTo = null;
     }
     
     

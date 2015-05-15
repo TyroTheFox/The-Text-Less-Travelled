@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+
 /**
  * The Command Words Class
  * This class holds an enumeration of all command words known to the game.
@@ -12,18 +14,24 @@
 
 class CommandWords
 {
-    // a constant array that holds all valid command words
-    private static final String validCommands[] = {
-        "go", "quit", "help", "look", "examine", "back", "systemtest", "switch", "inventory", "drop", "take", "zuul", "describe", "talk", "approach", "stop", 
-        "attack", "battle", "cast", "shoot"
-    };
+	private int charWidth = 65;
+	// Creates an instance of the WidthLimitedOutputStream
+	public static WidthLimitedOutputStream display;
+//    // a constant array that holds all valid command words
+//    private static final String validCommands[] = {
+//        "go", "quit", "help", "look", "examine", "back", "systemtest", "switch", "inventory", "drop", "take", "zuul", "describe", "talk", "approach", "stop", 
+//        "attack", "battle", "cast", "shoot"
+//    };
 
+    private static ArrayList<String> validCommands;
+    
     /**
      * Constructor - initialise the command words.
      */
-    public CommandWords()
+    public CommandWords(ArrayList<String> commandList)
     {
-        // nothing to do at the moment...
+    	display = new WidthLimitedOutputStream(System.out, charWidth);
+        validCommands = commandList;
     }
 
     /**
@@ -32,12 +40,19 @@ class CommandWords
      */
     public boolean isCommand(String aString)
     {
-        for(int i = 0; i < validCommands.length; i++) {
-            if(validCommands[i].equals(aString))
-                return true;
-        }
-        // if we get here, the string was not found in the commands
-        return false;
+    	for(String s : validCommands) {
+    		if(s.equals(aString)){
+    			return true;
+    		}
+    	}
+    	return false;
+    	
+//        for(int i = 0; i < validCommands.length; i++) {
+//            if(validCommands[i].equals(aString))
+//                return true;
+//        }
+//        // if we get here, the string was not found in the commands
+//        return false;
     }
 
     /**
@@ -45,9 +60,14 @@ class CommandWords
      */
     public void showAll() 
     {
-        for(int i = 0; i < validCommands.length; i++) {
-            System.out.print(validCommands[i] + "  ");
-        }
-        System.out.println();
+    	String returnString = "Commands - ";
+    	for(String s : validCommands) {
+    		returnString += s + " ~ ";
+    	}
+    	display.print(returnString);
+    	display.println();
+//        for(int i = 0; i < validCommands.length; i++) {
+//            System.out.print(validCommands[i] + "  ");
+//        }
     }
 }
