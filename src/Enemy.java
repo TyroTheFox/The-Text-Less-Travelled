@@ -133,21 +133,21 @@ public class Enemy{
 		//Magical Fortitude - Describes a character's ability to withstand magical attacks
 		magFortMod = cClass.modMagFort;
 		
-		maxHP = (CON * 2 + conMod) + level/25 + 10 + level;
+		maxHP = (CON * 20 + conMod) + level/25 + 10 + level;
 		
 		HP = maxHP;
 		
-		strength = ((STR * 2 + strMod) * level / 25 + 5);
-		dexterity = ((DEX * 2 + dexMod) * level / 25 + 5);
-		constitution = ((CON * 2 + conMod) * level / 25 + 5);
-		intelligence = ((INT * 2 + intMod) * level / 25 + 5);
-		wisdom = ((WIS * 2 + wisMod) * level / 25 + 5);
+		strength = ((STR * 20 + strMod) * level / 50 + 5);
+		dexterity = ((DEX * 20 + dexMod) * level / 50 + 5);
+		constitution = ((CON * 20 + conMod) * level / 50 + 5);
+		intelligence = ((INT * 20 + intMod) * level / 50 + 5);
+		wisdom = ((WIS * 20 + wisMod) * level / 50 + 5);
 		
-		fortitude = ((STR + CON + forMod) * level / 25 + 5);
-		marksmanship = ((DEX + WIS + markMod) * level / 25 + 5);
-		machineSkill = ((DEX + INT + machMod) * level / 25 + 5);
-		magicalSkill = ((INT + WIS + magMod) * level / 25 + 5);
-		magicalFortitude = ((INT + CON + magFortMod) * level / 25 + 5);
+		fortitude = (((STR + CON) * 10 + forMod) * level / 50 + 5);
+		marksmanship = (((DEX + WIS) * 10 + markMod) * level / 50 + 5);
+		machineSkill = (((DEX + INT) * 10 + machMod) * level / 50 + 5);
+		magicalSkill = (((INT + WIS) * 10 + magMod) * level / 50 + 5);
+		magicalFortitude = (((INT + CON) * 10 + magFortMod) * level / 50 + 5);
 		
 		critRatio = dexterity/7.5f + 5;
 	}

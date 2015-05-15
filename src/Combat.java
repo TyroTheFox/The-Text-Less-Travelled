@@ -125,9 +125,6 @@ public class Combat {
 		          if (commandWord.equals("shoot")){
 					  gunAttack(b.returnCommand());
 				  }
-				  else{
-					  display.println(b.name + " does nothing.");
-				  }
 			  }
 			  if(b.type == 2){
 		            BattleCharacter[] list = new BattleCharacter[10];
@@ -358,13 +355,26 @@ public class Combat {
     		}
         }
     	
-    	float damage = temp.player.attackCalc(tempE.fortitude, 50);
-		display.println();
-    	System.out.println(temp.player.name + " attacked " + tempE.name + " for " + damage);
-    	tempE.reduceHP(damage);
-	  	if(temp.player.critFlag){
-	  		display.println("-!CRITICAL HIT!-");
-	  	}
+        float hitChance = temp.player.accuracyCalc(100, 1);
+        
+		float rand = 0;
+		float max = 100, min = 0;
+		
+		float range = Math.abs(max - min);     
+		rand = (float) ((Math.random() * range) + (min <= max ? min : max));
+		
+		if(rand <= hitChance){        
+	    	float damage = temp.player.attackCalc(tempE.fortitude, 50);
+			display.println();
+	    	display.println(temp.player.name + " attacked " + tempE.name + " for " + damage);
+	    	tempE.reduceHP(damage);
+		  	if(temp.player.critFlag){
+		  		display.println("-!CRITICAL HIT!-");
+		  	}
+		}
+		else{
+			display.println(temp.player.name + " missed.");
+		}
     }
     
     public static void magicAttack(Command command){
@@ -407,13 +417,26 @@ public class Combat {
     		}
         }
     	
-    	float damage = temp.player.mAttackCalc(tempE.fortitude, 50);
-		display.println();
-    	System.out.println(temp.player.name + " attacked " + tempE.name + " for " + damage);
-    	tempE.reduceHP(damage);
-	  	if(temp.player.critFlag){
-	  		display.println("-!CRITICAL HIT!-");
-	  	}
+        float hitChance = temp.player.accuracyCalc(100, 1);
+        
+		float rand = 0;
+		float max = 100, min = 0;
+		
+		float range = Math.abs(max - min);     
+		rand = (float) ((Math.random() * range) + (min <= max ? min : max));
+		
+		if(rand <= hitChance){ 
+	    	float damage = temp.player.mAttackCalc(tempE.fortitude, 50);
+			display.println();
+	    	display.println(temp.player.name + " attacked " + tempE.name + " for " + damage);
+	    	tempE.reduceHP(damage);
+		  	if(temp.player.critFlag){
+		  		display.println("-!CRITICAL HIT!-");
+		  	}
+		}
+		else{
+			display.println(temp.player.name + " missed.");
+		}
     }
     
     public static void gunAttack(Command command){
@@ -456,13 +479,26 @@ public class Combat {
     		}
         }
     	
-    	float damage = temp.player.gAttackCalc(tempE.fortitude, 50);
-		display.println();
-    	System.out.println(temp.player.name + " attacked " + tempE.name + " for " + damage);
-    	tempE.reduceHP(damage);
-	  	if(temp.player.critFlag){
-	  		display.println("-!CRITICAL HIT!-");
-	  	}
+        float hitChance = temp.player.accuracyCalc(100, 1);
+        
+		float rand = 0;
+		float max = 100, min = 0;
+		
+		float range = Math.abs(max - min);     
+		rand = (float) ((Math.random() * range) + (min <= max ? min : max));
+		
+		if(rand <= hitChance){  
+	    	float damage = temp.player.gAttackCalc(tempE.fortitude, 50);
+			display.println();
+	    	display.println(temp.player.name + " attacked " + tempE.name + " for " + damage);
+	    	tempE.reduceHP(damage);
+		  	if(temp.player.critFlag){
+		  		display.println("-!CRITICAL HIT!-");
+		  	}
+		}
+		else{
+			display.println(temp.player.name + " missed.");
+		}
     }
 	
 }
