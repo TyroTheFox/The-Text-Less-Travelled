@@ -92,6 +92,7 @@ public class Enemy{
 			CharacterClass cClass;
 			
 			Boolean frontRow = false;	
+			boolean moving = false;
 			
 			float accuracy = 1;
 			boolean defending = false;

@@ -27,7 +27,7 @@ public class Combat {
 	int currentTurn = 0;
 	
     // a constant array that holds all valid command words
-    private static String[] combatCommands = {"attack", "cast", "shoot", "defend"};
+    private static String[] combatCommands = {"attack", "cast", "shoot", "defend", "move"};
 	
 	public Combat(){
 		
@@ -145,6 +145,20 @@ public class Combat {
 		        	  display.println();
 					  display.println(b.player.name + " defends.");
 				  }
+		          if(commandWord.equals("move")){
+		        	  if(!b.player.frontRow && b.player.moving){
+		        		  b.player.frontRow = true;
+		        		  b.player.moving = false;
+			        	  display.println();
+						  display.println(b.player.name + " moves forwards.");
+		        	  }
+		        	  if(b.player.frontRow && b.player.moving){
+		        		  b.player.frontRow = false;
+		        		  b.player.moving = false;
+			        	  display.println();
+						  display.println(b.player.name + " moves back.");
+		        	  }
+		          }
 			  }
 			  if(b.type == 2){
 		            BattleCharacter[] list = new BattleCharacter[10];
@@ -337,6 +351,11 @@ public class Combat {
         }
         else if(commandWord.equals("defend")){
         	b.player.defending = true;
+        	b.storeCommand(command);
+        	return true;
+        }
+        else if(commandWord.equals("move")){
+        	b.player.moving = true;
         	b.storeCommand(command);
         	return true;
         }
