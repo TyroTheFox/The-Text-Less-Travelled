@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 
 public class PlayerCharacter {
 
@@ -96,6 +97,16 @@ public class PlayerCharacter {
 			float accuracy = 1;
 			boolean defending = false;
 			
+			  int maxTank = 2;
+			  public ArrayList<EnergyTank> energyReserves;
+			  public EnergyTank temp;
+			  int currentTank;
+			  
+			  int rechargeTime = 5;
+			  int recharge = 0;
+			  boolean recharged = true;
+			  boolean recharging = false;
+			
 	public PlayerCharacter(String name, float startingLevel, CharacterClass cClass, 
 			float str, float dex, float con, float inte, float wis, float cha){
 		this.name = name;
@@ -151,6 +162,14 @@ public class PlayerCharacter {
 		magicalFortitude = (((INT + CON) * 10 + magFortMod) * level / 50 + 5);
 		
 		critRatio = dexterity/15 + 5;
+		
+		energyReserves = new ArrayList<EnergyTank>();
+		  
+		  for(int e = 0; e < maxTank; e++){
+			  energyReserves.add(new EnergyTank());
+		  }
+		  
+		  currentTank = energyReserves.size() - 1;
 	}
 	
     public int compareDexTo(PlayerCharacter p)
@@ -353,4 +372,125 @@ public class PlayerCharacter {
 		return exp;
 	}
 	
+    public boolean energyTankCheck(){
+    	boolean empty = false;
+    	
+		if(currentTank == 0){
+    		if(energyReserves.get(currentTank).empty){
+    			empty = true;
+    			recharging = true;
+    			recharged = false;
+    			recharge = 0;
+    		}
+    	}
+    	
+		return empty;	
+    }
+    
+    public boolean fullTankCheck(){
+    	boolean full = false;
+    	
+    	if(currentTank == maxTank - 1){
+    		if(energyReserves.get(currentTank).full){
+    			full = true;
+    		}
+    	}
+    	
+		return full;	
+    }
+    
+    public boolean spendEnergy(int cost){
+    	
+    	boolean costAccepted = false;
+    	
+    	if(energyReserves.get(currentTank).energyLevel - cost > 0){
+    		energyReserves.get(currentTank).energyLevel -= cost;
+    		costAccepted = true;
+    		return costAccepted;
+    	}
+    	
+    	if(energyReserves.get(currentTank).energyLevel - cost <= 0){
+    		if(currentTank != 0){
+    			int overflow = cost - energyReserves.get(currentTank).energyLevel;
+    			energyReserves.get(currentTank).energyLevel = 0;
+    			currentTank -= 1;
+    			
+    			energyReserves.get(currentTank).energyLevel -= overflow;
+    			costAccepted = true;
+    			return costAccepted;
+    		}
+    		if(currentTank == 0 && energyReserves.get(currentTank).energyLevel - cost == 0){
+    			energyReserves.get(currentTank).energyLevel -= cost;
+  			  	costAccepted = true;
+  			  	return costAccepted;
+    		}
+    	}
+    	
+    	return costAccepted;
+    }
+    
+    public boolean spendCheck(int cost){
+    	boolean costAccepted = false;
+    	
+    	if(energyReserves.get(currentTank).energyLevel - cost > 0){
+    		costAccepted = true;
+    		return costAccepted;
+    	}
+    	
+    	if(energyReserves.get(currentTank).energyLevel - cost <= 0){
+    		if(currentTank != 0){
+    			int overflow = cost - energyReserves.get(currentTank).energyLevel;
+    			
+    			if(energyReserves.get(currentTank - 1).energyLevel - overflow > 0){
+    				costAccepted = true;
+    			}
+    			return costAccepted;
+    		}
+    		else if(currentTank == 0 && energyReserves.get(currentTank).energyLevel - cost == 0){
+  			  	costAccepted = true;
+  			  	return costAccepted;
+    		}
+    	}
+    	
+    	return costAccepted;
+    }
+    
+    public void addEnergy(int amount){
+    	if(energyReserves.get(currentTank).energyLevel + amount < energyReserves.get(currentTank).maxEnergyLevel){
+    		energyReserves.get(currentTank).energyLevel += amount;
+    	}
+    	
+    	if(energyReserves.get(currentTank).energyLevel + amount >= energyReserves.get(currentTank).maxEnergyLevel){
+    		int overflow = (energyReserves.get(currentTank).energyLevel + amount) - energyReserves.get(currentTank).maxEnergyLevel;
+    		energyReserves.get(currentTank).energyLevel = energyReserves.get(currentTank).maxEnergyLevel;
+    		
+    		if(currentTank != maxTank - 1){
+    			currentTank += 1;
+    			energyReserves.get(currentTank).energyLevel += overflow;
+    		}
+    	}
+    }
+    
+	  public void renderEnergyTanks(){
+		  for(EnergyTank tank : energyReserves) {
+		      tank.render();
+		  }
+	  }
+	  
+	  public void updateEnergyTanks(){
+		  
+		  for(EnergyTank tank : energyReserves) {
+		      tank.update();
+		  }
+		  energyTankCheck();
+		  fullTankCheck();
+		  
+		  if(recharging){
+			  recharge++;
+			  if(recharge <= rechargeTime){
+				  recharging = false;
+				  recharged = true;
+			  }
+		  }
+	  }
 }

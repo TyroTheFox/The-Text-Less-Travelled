@@ -26,8 +26,12 @@ public class Combat {
 	
 	int currentTurn = 0;
 	
+	int defendCost = 10;
+	int attackCost = 50;
+	int rechargeAmount = 25;
+	
     // a constant array that holds all valid command words
-    private static String[] combatCommands = {"attack", "cast", "shoot", "defend", "move"};
+    private static String[] combatCommands = {"attack", "cast", "shoot", "defend", "move", "stand"};
 	
 	public Combat(){
 		
@@ -92,29 +96,48 @@ public class Combat {
 		
 		for(BattleCharacter b : turnOrder) {
 			temp = b;
-			if(b.type == 1){
-				b.player.defending = false;
+			if(b.type == 1){				
 				if(b.player.frontRow){
+					b.player.updateEnergyTanks();
+					if(b.player.recharging){
+						display.println("Recharging - " + b.player.recharged);
+						display.println(b.player.recharge + "/" + b.player.rechargeTime);
+					}
+					b.player.defending = false;
+					
 					display.print("///// " + b.player.name + " // ");
 					display.print("Lvl: " + b.player.level + " // ");
 					display.print("HP: " + b.player.HP + " // ");
+					b.player.renderEnergyTanks();
 					display.println();
 					getCommand(b);
 				}
 	        }
 		}
 		
-		System.out.println("-                                                    Front Row");
+	 System.out.println("-                                                    Front Row");
 		display.println("--------------------------------------------------------------");
-		System.out.println("-                                                     Back Row");
+	 System.out.println("-                                                     Back Row");
 		
 		for(BattleCharacter b : turnOrder) {
 			temp = b;
 			if(b.type == 1){
-				if(!b.player.frontRow){
+				if(!b.player.frontRow){	
+					b.player.updateEnergyTanks();
+					if(b.player.recharging){
+						display.println("Recharging - " + b.player.recharged);
+						display.println(b.player.recharge + "/" + b.player.rechargeTime);
+					}
+					b.player.defending = false;
+					
+					if(b.player.recharged){
+						b.player.addEnergy(rechargeAmount);
+					}
+
 					display.print("///// " + b.player.name + " // ");
 					display.print("Lvl: " + b.player.level + " // ");
 					display.print("HP: " + b.player.HP + " // ");
+					b.player.renderEnergyTanks();
 					display.println();
 					combatParser.showCommands();
 					getCommand(b);
@@ -134,16 +157,20 @@ public class Combat {
 		        // The Help Command - Prints the game's help messages.
 		          if (commandWord.equals("attack")){
 					  attack(b.returnCommand());
+					  b.player.spendEnergy(attackCost);
 				  }
 		          if (commandWord.equals("cast")){
 					  magicAttack(b.returnCommand());
+					  b.player.spendEnergy(attackCost);
 				  }
 		          if (commandWord.equals("shoot")){
 					  gunAttack(b.returnCommand());
+					  b.player.spendEnergy(attackCost);
 				  }
 		          if (commandWord.equals("defend")){
 		        	  display.println();
 					  display.println(b.player.name + " defends.");
+					  b.player.spendEnergy(defendCost);
 				  }
 		          if(commandWord.equals("move")){
 		        	  if(!b.player.frontRow && b.player.moving){
@@ -158,6 +185,10 @@ public class Combat {
 			        	  display.println();
 						  display.println(b.player.name + " moves back.");
 		        	  }
+		          }
+		          if(commandWord.equals("stand")){
+		        	  display.println();
+					  display.println(b.player.name + " stands and waits.");
 		          }
 			  }
 			  if(b.type == 2){
@@ -319,9 +350,7 @@ public class Combat {
      * @return
      */
     public boolean processCommand(Command command, BattleCharacter b) 
-    {
-        boolean wantToQuit = false;
-        
+    {        
         // Checks whether the user has given a command work that doesn't match any of the words programmed into the system.
         if(command.isUnknown()) {
             Logic.display.println("I'm pretty sure " + b.name + " can't do that...");
@@ -336,8 +365,14 @@ public class Combat {
         	if(command.hasSecondWord()){
 	        	int temp = Integer.parseInt(command.getSecondWord());
 	        	if(temp - 1 < enemyParty.size()){
-		            b.storeCommand(command);
-		            return true;
+	            	if(b.player.spendCheck(attackCost)){
+	    	        	b.storeCommand(command);
+	    	        	return true;
+	            	}
+	            	if(!b.player.spendCheck(attackCost)){
+	            		display.println("Nope, not enough.");
+	            		return false;
+	            	}
 	            }
 	        	else{
 	        		display.println("There aren't that many of them. Try again.");
@@ -345,17 +380,33 @@ public class Combat {
 	        	}
         	}
         	else{
-        		b.storeCommand(command);
-	            return true;
+            	if(b.player.spendCheck(attackCost)){
+    	        	b.storeCommand(command);
+    	        	return true;
+            	}
+            	if(!b.player.spendCheck(attackCost)){
+            		display.println("Nope, not enough energy.");
+            		return false;
+            	}
         	}
         }
         else if(commandWord.equals("defend")){
-        	b.player.defending = true;
-        	b.storeCommand(command);
-        	return true;
+        	if(b.player.spendCheck(defendCost)){
+	        	b.player.defending = true;
+	        	b.storeCommand(command);
+	        	return true;
+        	}
+        	if(!b.player.spendCheck(defendCost)){
+        		display.println("Nope, not enough energy.");
+        		return false;
+        	}
         }
         else if(commandWord.equals("move")){
         	b.player.moving = true;
+        	b.storeCommand(command);
+        	return true;
+        }
+        else if(commandWord.equals("stand")){
         	b.storeCommand(command);
         	return true;
         }
@@ -363,6 +414,8 @@ public class Combat {
         	Logic.display.println("I don't know what you mean...");
         	return false;
         }
+        
+        return false;
     }
     
     public static void attack(Command command){
