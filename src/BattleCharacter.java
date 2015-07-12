@@ -34,6 +34,13 @@ public class BattleCharacter {
 		return 0;
 	}
 	
+	public boolean returnEmpty(){
+		if(type == 1){
+			return player.energyTankCheck();
+		}		
+		return false;
+	}
+	
 	public void storeCommand(Command c){
 		command = c;
 	}

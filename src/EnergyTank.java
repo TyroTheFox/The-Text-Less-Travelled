@@ -20,12 +20,14 @@ public class EnergyTank {
 
 	public void render(){
 		display.print(tank);
+		System.out.println(energyLevel);
 	}
 	
 	public void update(){
+		
 		tank = "[";
 		energy = "";
-		for(int i = 0; i*5 <= energyLevel; i++){	
+		for(int i = 0; i*10 <= energyLevel; i++){	
 			energy += "|";
 		}
 		tank += energy + "] " + energyLevel;

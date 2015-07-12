@@ -32,6 +32,10 @@ public class Combat {
 	
     // a constant array that holds all valid command words
     private static String[] combatCommands = {"attack", "cast", "shoot", "defend", "move", "stand"};
+    
+	float accuracyBonus = 15;
+	
+	boolean rechargeDelay = false;
 	
 	public Combat(){
 		
@@ -59,6 +63,7 @@ public class Combat {
 		
 		for(BattleCharacter b : turnOrder) {
 			temp = b;
+			
 			if(b.type == 2){
 				b.enemy.defending = false;
 				if(!b.enemy.frontRow){
@@ -95,14 +100,31 @@ public class Combat {
 		display.println("||||||||||| Player Party");
 		
 		for(BattleCharacter b : turnOrder) {
-			temp = b;
-			if(b.type == 1){				
-				if(b.player.frontRow){
-					b.player.updateEnergyTanks();
-					if(b.player.recharging){
-						display.println("Recharging - " + b.player.recharged);
-						display.println(b.player.recharge + "/" + b.player.rechargeTime);
+			temp = b;	
+			if(b.type == 1){
+				b.player.updateEnergyTanks();
+				if(b.player.freeAction && !b.player.recharging && !b.player.chargedBuffer){
+					display.print("Charge!");
+					b.player.addEnergy(rechargeAmount);
+					b.player.freeAction = false;
+				}
+				
+				b.player.updateEnergyTanks();
+				
+				if(b.player.energyTankCheck()){
+					b.player.recharge++;
+					b.player.recharging = true;
+					display.print("Empty! " + b.player.recharge);
+					if(b.player.recharge >= b.player.rechargeTime){
+						b.player.recharging = false;
+						b.player.recharge = 0;
+						b.player.addEnergy(rechargeAmount);
+						b.player.updateEnergyTanks();
+						display.print("Recharged!");
 					}
+			  	}
+				
+				if(b.player.frontRow){
 					b.player.defending = false;
 					
 					display.print("///// " + b.player.name + " // ");
@@ -122,24 +144,14 @@ public class Combat {
 		for(BattleCharacter b : turnOrder) {
 			temp = b;
 			if(b.type == 1){
-				if(!b.player.frontRow){	
-					b.player.updateEnergyTanks();
-					if(b.player.recharging){
-						display.println("Recharging - " + b.player.recharged);
-						display.println(b.player.recharge + "/" + b.player.rechargeTime);
-					}
+				if(!b.player.frontRow){
 					b.player.defending = false;
-					
-					if(b.player.recharged){
-						b.player.addEnergy(rechargeAmount);
-					}
-
+				
 					display.print("///// " + b.player.name + " // ");
 					display.print("Lvl: " + b.player.level + " // ");
 					display.print("HP: " + b.player.HP + " // ");
 					b.player.renderEnergyTanks();
 					display.println();
-					combatParser.showCommands();
 					getCommand(b);
 				}
 	        }
@@ -190,6 +202,8 @@ public class Combat {
 		        	  display.println();
 					  display.println(b.player.name + " stands and waits.");
 		          }
+		         					
+		          b.player.updateEnergyTanks();
 			  }
 			  if(b.type == 2){
 		            BattleCharacter[] list = new BattleCharacter[10];
@@ -208,15 +222,30 @@ public class Combat {
 		    		rand = (int) ((Math.random() * range) + (min <= max ? min : max));
 		    		
 		    		tempP = list[rand].player;
+		    		
+		    		float hitChance = temp.enemy.accuracyCalc(100, 1, tempP.frontRow);
+		            
+		    		rand = 0;
+		    		max = 100;
+		    		min = 0;
+		    		
+		    		range = Math.abs(max - min);     
+		    		float rand2 = (float) ((Math.random() * range) + (min <= max ? min : max));
 				  
 		    		if(!tempP.defending){
-			    		float damage = temp.enemy.attackCalc(tempP.fortitude, 50);
-					  	display.println();
-					  	display.println(temp.name + " attacked " + tempP.name + " for " + damage);
-					  	tempP.reduceHP(damage);
-					  	if(b.enemy.critFlag){
-					  		display.println("-!CRITICAL HIT!-");
-					  	}
+		    			if(rand <= hitChance){  
+				    		float damage = temp.enemy.attackCalc(tempP.fortitude, 50);
+						  	display.println();
+						  	display.println(temp.name + " attacked " + tempP.name + " for " + damage);
+						  	tempP.reduceHP(damage);
+						  	if(b.enemy.critFlag){
+						  		display.println("-!CRITICAL HIT!-");
+						  	}
+		    			}
+		    			else{
+		    				display.println();
+		    				display.println(temp.player.name + " missed.");
+		    			}
 		    		}
 		    		else{
 		    			display.println();
@@ -404,10 +433,12 @@ public class Combat {
         else if(commandWord.equals("move")){
         	b.player.moving = true;
         	b.storeCommand(command);
+        	b.player.freeAction = true;
         	return true;
         }
         else if(commandWord.equals("stand")){
         	b.storeCommand(command);
+        	b.player.freeAction = true;
         	return true;
         }
         else{
@@ -458,7 +489,7 @@ public class Combat {
     		}
         }
     	
-        float hitChance = temp.player.accuracyCalc(100, 1);
+        float hitChance = temp.player.accuracyCalc(100, 1, tempE.frontRow);
         
 		float rand = 0;
 		float max = 100, min = 0;
@@ -527,7 +558,7 @@ public class Combat {
     		}
         }
     	
-        float hitChance = temp.player.accuracyCalc(100, 1);
+        float hitChance = temp.player.accuracyCalc(100, 1, tempE.frontRow);
         
 		float rand = 0;
 		float max = 100, min = 0;
@@ -596,7 +627,7 @@ public class Combat {
     		}
         }
     	
-        float hitChance = temp.player.accuracyCalc(100, 1);
+        float hitChance = temp.player.accuracyCalc(100, 1, tempE.frontRow);
         
 		float rand = 0;
 		float max = 100, min = 0;

@@ -172,6 +172,19 @@ public class Enemy{
     		HP = 0;
     	}
     }
+    
+	public float accuracyCalc(float baseAccuracy, float pEvasion, boolean frontRow){
+		float result = 0;
+		
+		if(frontRow){
+			result = (baseAccuracy * (accuracy/pEvasion));
+		}
+		else{
+			result = (baseAccuracy * (accuracy/(pEvasion + 10)));
+		}
+		
+		return result;
+	}
 	
 	public float attackCalc(float eFortitude, float baseAttackPower){
 		float rand = 0;

@@ -102,10 +102,12 @@ public class PlayerCharacter {
 			  public EnergyTank temp;
 			  int currentTank;
 			  
-			  int rechargeTime = 5;
+			  int rechargeTime = 3;
 			  int recharge = 0;
-			  boolean recharged = true;
 			  boolean recharging = false;
+			  
+			  boolean freeAction = false;
+			  boolean chargedBuffer = false;
 			
 	public PlayerCharacter(String name, float startingLevel, CharacterClass cClass, 
 			float str, float dex, float con, float inte, float wis, float cha){
@@ -191,10 +193,15 @@ public class PlayerCharacter {
     	}
     }
     
-	public float accuracyCalc(float baseAccuracy, float eEvasion){
+	public float accuracyCalc(float baseAccuracy, float eEvasion, boolean frontRow){
 		float result = 0;
 		
-		result = baseAccuracy * (accuracy/eEvasion);
+		if(frontRow){
+			result = (baseAccuracy * (accuracy/eEvasion));
+		}
+		else{
+			result = (baseAccuracy * (accuracy/(eEvasion + 10)));
+		}
 		
 		return result;
 	}
@@ -378,9 +385,6 @@ public class PlayerCharacter {
 		if(currentTank == 0){
     		if(energyReserves.get(currentTank).empty){
     			empty = true;
-    			recharging = true;
-    			recharged = false;
-    			recharge = 0;
     		}
     	}
     	
@@ -480,17 +484,9 @@ public class PlayerCharacter {
 	  public void updateEnergyTanks(){
 		  
 		  for(EnergyTank tank : energyReserves) {
-		      tank.update();
+			  tank.update();
 		  }
 		  energyTankCheck();
 		  fullTankCheck();
-		  
-		  if(recharging){
-			  recharge++;
-			  if(recharge <= rechargeTime){
-				  recharging = false;
-				  recharged = true;
-			  }
-		  }
 	  }
 }
