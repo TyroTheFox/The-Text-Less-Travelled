@@ -44,6 +44,8 @@ public class Logic {
 	    PlayerCharacter testCharacter, testCharacter2;
 	    Enemy testEnemy, testEnemy2;
 	    
+	    Toivo toivo;
+	    
 	    static ArrayList<Enemy> currentEnemyTeam;
 	        
         // Rooms
@@ -52,7 +54,8 @@ public class Logic {
         
       // a constant array that holds all valid command words
       private static String[] navCommands = {
-          "go", "quit", "help", "look", "examine", "back", "systemtest", "inventory", "drop", "take", "zuul", "describe", "talk", "approach", "stop", "battle"
+          "go", "quit", "help", "look", "examine", "back", "systemtest", "inventory", "drop", "take", "zuul", "describe", "talk", "approach", "stop", "battle",
+          "status"
       };
       
 	    
@@ -182,6 +185,8 @@ public class Logic {
         // Writes the current room to each character's room history.
         playerOne.writeRoomHistory(currentRoom);
         
+        toivo = new Toivo();
+        
         testCharacter = new PlayerCharacter("Test", 100, 
         		new CharacterClass("Mage", -5, 0, -5, 10, 10, 0, -10, 0, 0, 10, 10)
         		,10, 18, 10, 10, 10, 10);
@@ -189,8 +194,7 @@ public class Logic {
         		new CharacterClass("Warrior", 15, -5, 5, -10, -10, 5, 5, -10, -10, 0, -10)
         		,16, 12, 2, 20, 23, 50);
         
-        playerOne.addToParty(testCharacter);
-        playerOne.addToParty(testCharacter2);
+        playerOne.addToParty(toivo);
     }
     
     public void createNPCs(){
@@ -379,6 +383,9 @@ public class Logic {
         	if(c.end){
         		lookRoom();
         	}
+        }
+        else if (commandWord.equals("status")){
+        	display.print("Status");
         }
         return wantToQuit;
     }
